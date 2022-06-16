@@ -1,0 +1,11 @@
+Environment:
+  Local:
+    url: tcp(127.0.0.1:3306)
+    username: rootAdmin
+    password: Sarvesh@admin999
+    dbName: ToDoAppDB
+  ST:
+    url: tcp(127.0.0.1:3306)/
+    username: rootAdmin
+    password: Sarvesh@admin999
+    dbName: ToDoAppDB
