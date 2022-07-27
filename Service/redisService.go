@@ -22,6 +22,7 @@ func ConnectToRedis(url, password string, DB int) *redis.Client {
 	})
 }
 
+//check is the sessionId exist in redis
 func CheckInRedis(sessionId string) bool {
 	val, err := redisClient.Get(sessionId).Result()
 	if err != nil {

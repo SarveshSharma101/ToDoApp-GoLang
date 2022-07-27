@@ -8,13 +8,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//Initialize the router
 func GetRouter() *mux.Router {
 	router := mux.NewRouter()
 
 	//User login system
 	router.HandleFunc("/user", service.SaveUser).Methods("POST")
 	router.Handle("/login", middleware.CheckSessionDetails(http.HandlerFunc(service.LoginUser))).Methods("PATCH")
-	// router.HandleFunc("/login", service.LoginUser).Methods("PATCH")
 
 	// router.HandleFunc("/project", service.SaveProject).Methods("POST")
 	// router.HandleFunc("/task", service.SaveTask).Methods("POST")

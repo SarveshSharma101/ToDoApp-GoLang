@@ -17,9 +17,13 @@ func main() {
 		env = os.Args[1]
 	}
 	username, password, url, dbname := readConfigs("../Resources/Config/AppConfig.yaml", env)
+
+	//Initialize the DB
 	service.InitDbConnection(dbname, username, password, url)
+	//Get router
 	router := controller.GetRouter()
 	fmt.Println("Server is listening at 7000...")
+	//Start the server
 	http.ListenAndServe(":7000", router)
 }
 

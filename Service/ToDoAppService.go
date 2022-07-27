@@ -14,6 +14,7 @@ import (
 var DB *gorm.DB
 var dbUrl = "?charset=utf8mb4&parseTime=True&loc=Local"
 
+//Initialize DB and redis connection
 func InitDbConnection(dbName, uname, password, url string) {
 	dbUrl = uname + ":" + password + "@" + url + "/" + dbName + dbUrl
 	fmt.Println("------->", dbUrl)
@@ -28,13 +29,17 @@ func InitDbConnection(dbName, uname, password, url string) {
 	InitRedisClient()
 }
 
+//Register a user
 func SaveUser(w http.ResponseWriter, r *http.Request) {
+	//set content type to json
 	w.Header().Set("content-type", "application/json")
+
 	var userReq datamodel.SaveUserReqBody
 	var user datamodel.User
 
+	//parse the req body to json datamodel
 	json.NewDecoder(r.Body).Decode(&userReq)
-
+	//validate request
 	isValid, msg := ValidateUser(userReq)
 	if !isValid {
 		w.WriteHeader(http.StatusBadRequest)
@@ -42,40 +47,55 @@ func SaveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//check if such a user already exist
 	DB.Table("users").Where("username", userReq.UName).Select("*").Scan(&user)
-
 	if len(user.Username) > 0 {
 		w.WriteHeader(http.StatusConflict)
 		json.NewEncoder(w).Encode("User already exist please select some new username")
 		return
 	}
+
+	//store the user in DB
 	user.Password = userReq.Password
 	user.Username = userReq.UName
 	user.Type = userReq.Type
+	//throw error if error occurs while saving the user
 	if err := DB.Select("Uid", "Username", "Password", "Type").Create(&user).Error; err != nil {
 		fmt.Println("Error! >>>>>>>>", err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("There was some error")
 		return
 	}
+	//return success response if no error
 	json.NewEncoder(w).Encode(user)
 }
 
+//Login the user
 func LoginUser(w http.ResponseWriter, r *http.Request) {
+	//set content type to json
 	w.Header().Set("content-type", "application/json")
+
 	var loginReqBody datamodel.LoginReqBody
 	var user datamodel.User
 
+	//parse the req body to datamodel
 	json.NewDecoder(r.Body).Decode(&loginReqBody)
+
+	//check if user exist and validate the password
 	DB.Table("users").Where("username", loginReqBody.Uname).Select("*").Scan(&user)
 	if len(user.Username) <= 0 {
+
+		//failure response if user not found
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode("No Such user found")
 	} else if user.Password != loginReqBody.Password {
+
+		//failure response if password don't match
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("Password did not match")
 	} else {
 
+		//if password match create a sessionId and store in redis
 		sessionId := utility.GetRandomAlphaNumbericString(10)
 		for CheckInRedis(sessionId) {
 			sessionId = utility.GetRandomAlphaNumbericString(10)
@@ -85,6 +105,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 			Role:     user.Type,
 		})
 
+		//send back response with sessionId in cookie details of response
 		cookie := &http.Cookie{
 			Name:   "sessionId",
 			Value:  sessionId,
@@ -95,6 +116,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// =====================================================================================================================
 // func SaveProject(w http.ResponseWriter, r *http.Request) {
 // 	w.Header().Set("content-type", "application/json")
 // 	var project datamodel.Project

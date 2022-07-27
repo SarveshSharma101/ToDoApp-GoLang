@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+//Middleware to check if the session already exist for the user
 func CheckSessionDetails(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("sessionId")
