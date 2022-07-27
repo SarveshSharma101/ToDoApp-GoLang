@@ -58,3 +58,10 @@ func CheckIfUserHasValidSession(sessionId string) bool {
 		return false
 	}
 }
+
+func DeleteSession(sessionId string) {
+	err := redisClient.Del(sessionId).Err()
+	if err != nil {
+		panic(err)
+	}
+}

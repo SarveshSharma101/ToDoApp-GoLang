@@ -18,7 +18,6 @@ var dbUrl = "?charset=utf8mb4&parseTime=True&loc=Local"
 //Initialize DB and redis connection
 func InitDbConnection(dbName, uname, password, url string) {
 	dbUrl = uname + ":" + password + "@" + url + "/" + dbName + dbUrl
-	fmt.Println("------->", dbUrl)
 	var err error
 	DB, err = gorm.Open(mysql.Open(dbUrl), &gorm.Config{})
 	if err != nil {
@@ -247,6 +246,15 @@ func AddClosureComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode("Comment added")
+}
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	c, err := r.Cookie("sessionId")
+	if err != nil {
+		panic(err)
+	}
+	DeleteSession(c.Value)
 }
 
 // =====================================================================================================================

@@ -25,8 +25,10 @@ func GetRouter() *mux.Router {
 	router.Handle("/getAllUser", middleware.CheckUserSession(http.HandlerFunc(service.GetAllUser))).Methods("GET")
 	router.Handle("/getDevTask/{userId}", middleware.CheckUserSession(http.HandlerFunc(service.GetDevTask))).Methods("GET")
 	router.Handle("/getAllDev", middleware.CheckUserSession(http.HandlerFunc(service.GetAllDev))).Methods("GET")
-	// router.Handle("/addTaskComment", middleware.CheckUserSession(http.HandlerFunc(service.AddClosureComment))).Methods("PATCH")
+	router.Handle("/addTaskComment", middleware.CheckUserSession(http.HandlerFunc(service.AddClosureComment))).Methods("PATCH")
 	router.Handle("/updateTaskStatus", middleware.CheckUserSession(http.HandlerFunc(service.UpdateTaskStatus))).Methods("PATCH")
+
+	router.Handle("/logout", middleware.CheckUserSession(http.HandlerFunc(service.Logout))).Methods("POST")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("../Resources/template/")))
 
