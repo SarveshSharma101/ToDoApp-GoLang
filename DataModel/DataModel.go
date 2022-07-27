@@ -22,7 +22,12 @@ type (
 		Uid         int    `gorm:"primaryKey;autoIncrement"`
 		Username    string `gorm:"not null"`
 		Password    string `gorm:"not null"`
-		Type        string
-		LoginStatus bool
+		Type        int
+		LoginStatus bool `gorm:"default:false"`
+	}
+
+	RedisUser struct {
+		Username string
+		Role     int
 	}
 )
