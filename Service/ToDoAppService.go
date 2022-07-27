@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -116,78 +117,112 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//Create a new project
+func SaveProject(w http.ResponseWriter, r *http.Request) {
+	//set content type to json
+	w.Header().Set("content-type", "application/json")
+
+	//parse req body to datamodel
+	var project datamodel.Project
+
+	json.NewDecoder(r.Body).Decode(&project)
+	var checkProject datamodel.Project
+
+	//check if the project already exist
+	DB.Table("projects").Where("pid", project.Pid).Select("*").Scan(&checkProject)
+	if len(checkProject.Name) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Project already exist please select some new username")
+		return
+	}
+
+	//save the project
+	if err := DB.Create(&project).Error; err != nil {
+		fmt.Println("***********Error********\n", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("There was some error")
+		return
+	}
+	//send success response
+	json.NewEncoder(w).Encode(project)
+}
+
+//Create a new Task
+func SaveTask(w http.ResponseWriter, r *http.Request) {
+	//set content type as json
+	w.Header().Set("content-type", "application/json")
+
+	//parse req to datamodel
+	var task datamodel.SaveTaskReqBody
+	var checkTask datamodel.Task
+
+	err := json.NewDecoder(r.Body).Decode(&task)
+	if err != nil {
+		panic(err)
+	}
+
+	//check if task already exist
+	DB.Table("tasks").Where("tid", task.Tid).Select("*").Scan(&checkTask)
+	if len(checkTask.TaskName) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Task already exist please select some new username")
+		return
+	}
+	//save the task
+	checkTask.Tid = task.Tid
+	checkTask.TaskName = task.TName
+	checkTask.TaskDesc = task.TDesc
+	if err := DB.Select("Tid", "TaskName", "TaskDesc").Create(&checkTask).Error; err != nil {
+		fmt.Println("***********Error********\n", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("There was some error")
+		return
+	}
+	json.NewEncoder(w).Encode(task)
+}
+
+//get all project
+func GetAllProjects(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var project []datamodel.Project
+	DB.Find(&project)
+	json.NewEncoder(w).Encode(project)
+}
+
+//get all task
+func GetAllTask(w http.ResponseWriter, r *http.Request) {
+	var task []datamodel.Task
+	w.Header().Set("content-type", "application/json")
+	DB.Find(&task)
+	json.NewEncoder(w).Encode(task)
+}
+
+//get all users
+func GetAllUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var user []datamodel.User
+	DB.Find(&user)
+	json.NewEncoder(w).Encode(user)
+}
+
+//get all users
+func GetAllDev(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var user []datamodel.User
+	DB.Where("type = ?", "2").Find(&user)
+	json.NewEncoder(w).Encode(user)
+}
+
+//get all task for dev
+func GetDevTask(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	userId := mux.Vars(r)["userId"]
+	var task []datamodel.Task
+	DB.Where("user_id", userId).Find(&task)
+	json.NewEncoder(w).Encode(task)
+}
+
 // =====================================================================================================================
-// func SaveProject(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("content-type", "application/json")
-// 	var project datamodel.Project
-
-// 	json.NewDecoder(r.Body).Decode(&project)
-// 	var checkProject datamodel.Project
-// 	DB.Table("projects").Where("pid", project.Pid).Select("*").Scan(&checkProject)
-// 	if len(checkProject.Name) > 0 {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		json.NewEncoder(w).Encode("Project already exist please select some new username")
-// 		return
-// 	}
-
-// 	if err := DB.Create(project).Error; err != nil {
-// 		fmt.Println("***********Error********\n", err.Error())
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		json.NewEncoder(w).Encode("There was some error")
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode(project)
-// }
-
-// func SaveTask(w http.ResponseWriter, r *http.Request) {
-// 	var task SaveTaskReqBody
-// 	var checkTask datamodel.Task
-
-// 	err := json.NewDecoder(r.Body).Decode(&task)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	w.Header().Set("content-type", "application/json")
-
-// 	DB.Table("tasks").Where("tid", task.Tid).Select("*").Scan(&checkTask)
-// 	if len(checkTask.TaskName) > 0 {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		json.NewEncoder(w).Encode("Task already exist please select some new username")
-// 		return
-// 	}
-// 	checkTask.Tid = task.Tid
-// 	checkTask.TaskName = task.TName
-// 	checkTask.TaskDesc = task.TDesc
-// 	if err := DB.Select("Tid", "TaskName", "TaskDesc").Create(checkTask).Error; err != nil {
-// 		fmt.Println("***********Error********\n", err.Error())
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		json.NewEncoder(w).Encode("There was some error")
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode(task)
-// }
-
-// func GetAllProjects(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("content-type", "application/json")
-// 	var project []datamodel.Project
-// 	DB.Find(&project)
-// 	json.NewEncoder(w).Encode(project)
-// }
-
-// func GetAllTask(w http.ResponseWriter, r *http.Request) {
-// 	var task []datamodel.Task
-// 	w.Header().Set("content-type", "application/json")
-// 	DB.Find(&task)
-// 	json.NewEncoder(w).Encode(task)
-// }
-
-// func GetAllUser(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("content-type", "application/json")
-// 	var user []datamodel.User
-// 	DB.Find(&user)
-// 	json.NewEncoder(w).Encode(user)
-// }
-
 // func UpdateTaskStatus(w http.ResponseWriter, r *http.Request) {
 // 	w.Header().Set("content-type", "application/json")
 // 	var updateTaskStatus UpdateTaskStatusReqBody

@@ -46,3 +46,15 @@ func storeSession(sessionId string, user datamodel.RedisUser) {
 		panic(err)
 	}
 }
+
+func CheckIfUserHasValidSession(sessionId string) bool {
+	val, err := redisClient.Get(sessionId).Result()
+	if err != nil {
+		return false
+	}
+	if len(val) != 0 {
+		return true
+	} else {
+		return false
+	}
+}

@@ -16,16 +16,18 @@ func GetRouter() *mux.Router {
 	router.HandleFunc("/user", service.SaveUser).Methods("POST")
 	router.Handle("/login", middleware.CheckSessionDetails(http.HandlerFunc(service.LoginUser))).Methods("PATCH")
 
-	// router.HandleFunc("/project", service.SaveProject).Methods("POST")
-	// router.HandleFunc("/task", service.SaveTask).Methods("POST")
+	//create project and task
+	router.Handle("/project", middleware.CheckUserSession(http.HandlerFunc(service.SaveProject))).Methods("POST")
+	router.Handle("/task", middleware.CheckUserSession(http.HandlerFunc(service.SaveTask))).Methods("POST")
+
+	router.Handle("/getAllProjects", middleware.CheckUserSession(http.HandlerFunc(service.GetAllProjects))).Methods("GET")
+	router.Handle("/getAllTask", middleware.CheckUserSession(http.HandlerFunc(service.GetAllTask))).Methods("GET")
+	router.Handle("/getAllUser", middleware.CheckUserSession(http.HandlerFunc(service.GetAllUser))).Methods("GET")
+	router.Handle("/getDevTask/{userId}", middleware.CheckUserSession(http.HandlerFunc(service.GetDevTask))).Methods("GET")
+	router.Handle("/getAllDev", middleware.CheckUserSession(http.HandlerFunc(service.GetAllDev))).Methods("GET")
 
 	// router.HandleFunc("/updateTaskStatus", service.UpdateTaskStatus).Methods("PATCH")
 	// router.HandleFunc("/addTaskComment", service.AddClosureComment).Methods("PATCH")
-
-	// router.HandleFunc("/getAllProjects", service.GetAllProjects).Methods("GET")
-	// router.HandleFunc("/getAllTask", service.GetAllTask).Methods("GET")
-	// router.HandleFunc("/getAllUser", service.GetAllUser).Methods("GET")
-	// router.HandleFunc("/getDevTask", service.GetDevTask).Methods("GET")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("../Resources/template/")))
 
