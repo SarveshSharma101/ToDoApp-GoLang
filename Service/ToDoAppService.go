@@ -217,54 +217,39 @@ func GetAllDev(w http.ResponseWriter, r *http.Request) {
 func GetDevTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	userId := mux.Vars(r)["userId"]
-	var task []datamodel.Task
-	DB.Where("user_id", userId).Find(&task)
-	json.NewEncoder(w).Encode(task)
+
+	var tasks []datamodel.Task
+	DB.Where("user_id", userId).Find(&tasks)
+	json.NewEncoder(w).Encode(tasks)
+}
+
+//update task status
+func UpdateTaskStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var updateTaskStatus datamodel.UpdateTaskStatusReqBody
+	json.NewDecoder(r.Body).Decode(&updateTaskStatus)
+	if err := DB.Model(&datamodel.Task{}).Where("tid", updateTaskStatus.Id).Update("status", updateTaskStatus.Status).Error; err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("There was some error")
+		return
+	}
+	json.NewEncoder(w).Encode("Status updated")
+}
+
+//Add closure comments
+func AddClosureComment(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var addTaskCommentReqBody datamodel.AddTaskCommentReqBody
+	json.NewDecoder(r.Body).Decode(&addTaskCommentReqBody)
+	if err := DB.Model(&datamodel.Task{}).Where("tid", addTaskCommentReqBody.Id).Update("closure_comment", addTaskCommentReqBody.Status); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("There was some error")
+		return
+	}
+	json.NewEncoder(w).Encode("Comment added")
 }
 
 // =====================================================================================================================
-// func UpdateTaskStatus(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("content-type", "application/json")
-// 	var updateTaskStatus UpdateTaskStatusReqBody
-// 	json.NewDecoder(r.Body).Decode(&updateTaskStatus)
-// 	if err := DB.Model(&datamodel.Task{}).Where("tid", updateTaskStatus.Id).Update("status", updateTaskStatus.Status).Error; err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		json.NewEncoder(w).Encode("There was some error")
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode("Status updated")
-// }
-
-// func AddClosureComment(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("content-type", "application/json")
-// 	var addTaskCommentReqBody AddTaskCommentReqBody
-// 	json.NewDecoder(r.Body).Decode(&addTaskCommentReqBody)
-// 	if err := DB.Model(&datamodel.Task{}).Where("tid", addTaskCommentReqBody.Id).Update("closure_comment", addTaskCommentReqBody.Status); err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		json.NewEncoder(w).Encode("There was some error")
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode("Comment added")
-// }
-
-// func GetDevTask(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("content-type", "application/json")
-// 	var getDevTaskReqBody GetDevTaskReqBody
-// 	var user datamodel.User
-
-// 	json.NewDecoder(r.Body).Decode(&getDevTaskReqBody)
-// 	DB.Table("users").Where("username", getDevTaskReqBody.Username).Select("*").Scan(&user)
-// 	DB.First(&user)
-// 	if len(user.Username) <= 0 {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		json.NewEncoder(w).Encode("No Such user found")
-// 		return
-// 	}
-
-// 	var tasks []datamodel.Task
-// 	DB.Where("user_id", user.Uid).Find(&tasks)
-// 	json.NewEncoder(w).Encode(tasks)
-// }
 
 func ValidateUser(userReq datamodel.SaveUserReqBody) (bool, string) {
 	if len(userReq.UName) == 0 || len(userReq.Password) == 0 {
