@@ -135,6 +135,15 @@ func SaveProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//check if manager is there
+	var checkManager datamodel.User
+	DB.Table("users").Where("uid", project.UserId).Select("*").Scan(&checkManager)
+	if len(checkManager.Username) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode("Manager no found")
+		return
+	}
+
 	//save the project
 	if err := DB.Create(&project).Error; err != nil {
 		fmt.Println("***********Error********\n", err.Error())
@@ -167,6 +176,16 @@ func SaveTask(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Task already exist please select some new username")
 		return
 	}
+
+	//check if Dev exist
+	var checkDev datamodel.User
+	DB.Table("users").Where("uid", task.UserId).Select("*").Scan(&checkDev)
+	if len(checkDev.Username) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode("Dev not found")
+		return
+	}
+
 	//save the task
 	checkTask.Tid = task.Tid
 	checkTask.TaskName = task.TName
@@ -212,6 +231,14 @@ func GetAllDev(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
+//get all users
+func GetAllManager(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var user []datamodel.User
+	DB.Where("type = ?", "1").Find(&user)
+	json.NewEncoder(w).Encode(user)
+}
+
 //get all task for dev
 func GetDevTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
@@ -219,6 +246,16 @@ func GetDevTask(w http.ResponseWriter, r *http.Request) {
 
 	var tasks []datamodel.Task
 	DB.Where("user_id", userId).Find(&tasks)
+	json.NewEncoder(w).Encode(tasks)
+}
+
+//get all task for dev
+func GetProjectTask(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	userId := mux.Vars(r)["projectId"]
+
+	var tasks []datamodel.Task
+	DB.Where("project_id", userId).Find(&tasks)
 	json.NewEncoder(w).Encode(tasks)
 }
 

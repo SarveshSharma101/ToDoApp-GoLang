@@ -20,17 +20,21 @@ func GetRouter() *mux.Router {
 	router.Handle("/project", middleware.CheckUserSession(http.HandlerFunc(service.SaveProject))).Methods("POST")
 	router.Handle("/task", middleware.CheckUserSession(http.HandlerFunc(service.SaveTask))).Methods("POST")
 
+	//Get
 	router.Handle("/getAllProjects", middleware.CheckUserSession(http.HandlerFunc(service.GetAllProjects))).Methods("GET")
 	router.Handle("/getAllTask", middleware.CheckUserSession(http.HandlerFunc(service.GetAllTask))).Methods("GET")
 	router.Handle("/getAllUser", middleware.CheckUserSession(http.HandlerFunc(service.GetAllUser))).Methods("GET")
 	router.Handle("/getDevTask/{userId}", middleware.CheckUserSession(http.HandlerFunc(service.GetDevTask))).Methods("GET")
+	router.Handle("/getProjectTask/{proejctId}", middleware.CheckUserSession(http.HandlerFunc(service.GetDevTask))).Methods("GET")
 	router.Handle("/getAllDev", middleware.CheckUserSession(http.HandlerFunc(service.GetAllDev))).Methods("GET")
+	router.Handle("/getAllManager", middleware.CheckUserSession(http.HandlerFunc(service.GetAllManager))).Methods("GET")
+
+	//update task
 	router.Handle("/addTaskComment", middleware.CheckUserSession(http.HandlerFunc(service.AddClosureComment))).Methods("PATCH")
 	router.Handle("/updateTaskStatus", middleware.CheckUserSession(http.HandlerFunc(service.UpdateTaskStatus))).Methods("PATCH")
 
+	//logout
 	router.Handle("/logout", middleware.CheckUserSession(http.HandlerFunc(service.Logout))).Methods("POST")
-
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("../Resources/template/")))
 
 	router.Use(mux.CORSMethodMiddleware(router))
 	return router

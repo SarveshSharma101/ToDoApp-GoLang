@@ -2,8 +2,9 @@ package datamodel
 
 type (
 	Project struct {
-		Pid  int    `gorm:"primaryKey" json:"pid"`
-		Name string `gorm:"project_name; not null" json:"name"`
+		Pid    int    `gorm:"primaryKey" json:"pid"`
+		Name   string `gorm:"project_name; not null" json:"name"`
+		UserId int    `gorm:"userId" json:"userId"`
 	}
 
 	Task struct {

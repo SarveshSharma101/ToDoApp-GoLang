@@ -17,9 +17,10 @@ type (
 		Username string
 	}
 	SaveTaskReqBody struct {
-		Tid   int    `json:"tid"`
-		TName string `json:"tName"`
-		TDesc string `json:"tDesc"`
+		Tid    int    `json:"tid"`
+		TName  string `json:"tName"`
+		TDesc  string `json:"tDesc"`
+		UserId int    `json:"userId"`
 	}
 	SaveUserReqBody struct {
 		UName    string `json:"uname"`
